@@ -169,6 +169,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "templater-obsidian:Templater": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -179,9 +180,9 @@
   },
   "active": "e69a6761123e4b5e",
   "lastOpenFiles": [
-    "Untitled.canvas",
     "2 - Command Sheets/Command Sheet.md",
     "1 - Templates/Template-PenTest.md",
+    "Untitled.canvas",
     "Temp.md",
     "Untitled",
     "Active Directory/THM - Attacktive Directory.md",
