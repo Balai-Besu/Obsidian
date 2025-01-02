@@ -1,0 +1,5 @@
+- Kerberoasting
+- AS-Rep roasting
+- LLMNR poisoning
+- NTLM relay attacks
+- NTDS dumping attacks
