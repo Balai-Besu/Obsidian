@@ -22,7 +22,7 @@
             }
           },
           {
-            "id": "0c4011128f2fa842",
+            "id": "9e6d65707fb125eb",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -178,11 +178,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "0c4011128f2fa842",
+  "active": "9e6d65707fb125eb",
   "lastOpenFiles": [
-    "2 - Priv Esc/Priv Esc.md",
-    "2 - Command Sheets/Command Sheet.md",
     "1 - Templates/Template-PenTest.md",
+    "2 - Command Sheets/Command Sheet.md",
+    "2 - Priv Esc/Priv Esc.md",
     "2 - Service Enum/Postgres sql.md",
     "2 - Service Enum/NFS - 2049.md",
     "2 - Service Enum/SMB - 139, 445.md",
