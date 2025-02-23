@@ -35,8 +35,7 @@
               "title": "Command Sheet"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -179,10 +178,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "1ae075638bd864a5",
+  "active": "47c6e3365c4759ab",
   "lastOpenFiles": [
-    "1 - Templates/Template-PenTest.md",
     "2 - Command Sheets/Command Sheet.md",
+    "1 - Templates/Template-PenTest.md",
     "Data/Medjed.md",
     "Untitled.canvas",
     "Data/10 - Static Files/Linux Privilege Escalation.png",
