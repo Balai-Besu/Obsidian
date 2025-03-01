@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "b538f0075f679628",
+        "id": "b625a8cdfc748d15",
         "type": "tabs",
         "children": [
           {
-            "id": "47c6e3365c4759ab",
+            "id": "c21eb90a0e87a15d",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -22,7 +22,7 @@
             }
           },
           {
-            "id": "1ae075638bd864a5",
+            "id": "3dec72d07e4ea8bd",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -179,11 +179,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "1ae075638bd864a5",
+  "active": "3dec72d07e4ea8bd",
   "lastOpenFiles": [
     "1 - Templates/Template-PenTest.md",
-    "Pasted image 20250225182430.png",
     "2 - Command Sheets/Command Sheet.md",
+    "Pasted image 20250225182430.png",
     "Data/Medjed.md",
     "Untitled.canvas",
     "Data/10 - Static Files/Linux Privilege Escalation.png",
