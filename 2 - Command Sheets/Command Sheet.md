@@ -1,5 +1,5 @@
 ---
-Target IP: 192.168.193.55
+Target IP: 192.168.130.55
 Attacker IP: 192.168.45.178
 ---
 #### nmap Command
